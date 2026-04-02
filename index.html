@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Tic-Tac-Toe Online</title>
+    <style>
+        .board {
+            display: grid;
+            grid-template-columns: repeat(3, 100px);
+            gap: 5px;
+            margin-top: 20px;
+            justify-content: center;
+        }
+        .cell {
+            width: 100px;
+            height: 100px;
+            border: 2px solid black;
+            font-size: 40px;
+            text-align: center;
+            line-height: 100px;
+            cursor: pointer;
+        }
+        #status { text-align: center; font-family: sans-serif; margin-top: 20px; }
+        .controls { text-align: center; margin-top: 20px; }
+        button { padding: 10px 20px; font-size: 16px; cursor: pointer; border-radius: 8px; }
+    </style>
+</head>
+<body>
+
+    <h1 id="status">Next Turn: X</h1>
+
+    <div class="board">
+        <div class="cell" onclick="move(0)"></div>
+        <div class="cell" onclick="move(1)"></div>
+        <div class="cell" onclick="move(2)"></div>
+        <div class="cell" onclick="move(3)"></div>
+        <div class="cell" onclick="move(4)"></div>
+        <div class="cell" onclick="move(5)"></div>
+        <div class="cell" onclick="move(6)"></div>
+        <div class="cell" onclick="move(7)"></div>
+        <div class="cell" onclick="move(8)"></div>
+    </div>
+
+    <div class="controls">
+        <button onclick="resetGame()">Play Again</button>
+    </div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/4.0.1/socket.io.js"></script>
+    <script>
+        var socket = io();
+
+        function move(i) {
+            socket.emit('player_move', {index: i});
+        }
+
+        function resetGame() {
+            socket.emit('reset_game');
+        }
+
+        socket.on('update_board', function(data) {
+            const cells = document.getElementsByClassName('cell');
+            cells[data.index].innerText = data.symbol;
+
+            if (data.winner) {
+                document.getElementById('status').innerText = "Winner: " + data.winner + "!";
+            } else {
+                let next = (data.symbol === "X") ? "O" : "X";
+                document.getElementById('status').innerText = "Next Turn: " + next;
+            }
+        });
+
+        socket.on('reset_board', function() {
+            const cells = document.getElementsByClassName('cell');
+            for (let i = 0; i < cells.length; i++) {
+                cells[i].innerText = "";
+            }
+            document.getElementById('status').innerText = "Next Turn: X";
+        });
+    </script>
+</body>
+</html>
